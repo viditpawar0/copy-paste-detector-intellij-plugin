@@ -6,19 +6,18 @@ import com.intellij.openapi.editor.RawText
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.remoteDev.util.addPathSuffix
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodySubscribers
 import java.util.*
 
 class CopyPasteDetector : CopyPastePreProcessor {
     private val serverUrl = URI(ResourceBundle.getBundle("plugin").getString("ServerUrl"))
     private val client = HttpClient.newBuilder().build()
+    private val sessionData = SessionData.getInstance().state
 
     override fun preprocessOnCopy(
         file: PsiFile?,
@@ -27,6 +26,7 @@ class CopyPasteDetector : CopyPastePreProcessor {
         text: String?
     ): String? {
         println("Copied: $text")
+        postSnippet(text, SnippetType.COPIED)
         return text
     }
 
@@ -37,13 +37,20 @@ class CopyPasteDetector : CopyPastePreProcessor {
         text: String?,
         rawText: RawText?
     ): String {
-        val sessionData = SessionData.getInstance().state
         if (sessionData.sessionId == null) {
             return text.orEmpty()
         }
+        postSnippet(text, SnippetType.PASTED)
+        println("Pasted: $text")
+        return text.orEmpty()
+    }
+
+    private fun postSnippet(text: String?, type: SnippetType) {
         val body = buildJsonObject {
             put("session", sessionData.sessionId)
+            put("clientName", sessionData.clientName)
             put("content", text)
+            put("type", type.toString())
         }
         val request = HttpRequest
             .newBuilder()
@@ -58,7 +65,5 @@ class CopyPasteDetector : CopyPastePreProcessor {
             println(response.body())
             println(throwable.message)
         }
-        println("Pasted: $text")
-        return text.orEmpty()
     }
 }
