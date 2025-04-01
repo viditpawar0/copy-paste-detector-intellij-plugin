@@ -6,6 +6,8 @@ import com.intellij.openapi.editor.RawText
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.remoteDev.util.addPathSuffix
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.net.URI
@@ -13,6 +15,8 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodySubscribers
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class CopyPasteDetector : CopyPastePreProcessor {
@@ -47,6 +51,7 @@ class CopyPasteDetector : CopyPastePreProcessor {
     }
 
     private fun postSnippet(text: String?, type: SnippetType) {
+        if(LocalDateTime.parse(sessionData.endsAt).isBefore(LocalDateTime.now())) return
         val body = buildJsonObject {
             put("session", sessionData.sessionId)
             put("clientName", sessionData.clientName)
@@ -54,7 +59,7 @@ class CopyPasteDetector : CopyPastePreProcessor {
             put("type", type.toString())
             put("createdAt", LocalDateTime.now().toString())
         }
-        println(LocalDateTime.now().toString())
+        println(body)
         val request = HttpRequest
             .newBuilder()
             .uri(serverUrl.addPathSuffix("snippet"))
@@ -65,8 +70,8 @@ class CopyPasteDetector : CopyPastePreProcessor {
             println("Status code: ${it.statusCode()}")
             BodySubscribers.ofString(charset("UTF-8"))
         }.handleAsync {response, throwable ->
-            println(response.body())
-            println(throwable.message)
+            println("Response:${response.body()}")
+            println("Throwable:${throwable.message}")
         }
     }
 }

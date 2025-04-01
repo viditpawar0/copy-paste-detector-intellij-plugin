@@ -3,6 +3,9 @@ package org.lsrv.copypastedetector
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.remoteDev.util.addPathSuffix
 import com.intellij.ui.dsl.builder.panel
+import kotlinx.serialization.json.Json.Default.parseToJsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.net.ConnectException
 import java.net.URI
 import java.net.http.HttpClient
@@ -78,8 +81,12 @@ class RegisterSessionDialog : DialogWrapper(true) {
         }
         println("Response: ${response.body()}")
         val sessionState = SessionData.getInstance().state
-        sessionState.sessionId = sessionId.toString()
         sessionState.clientName = clientName
+        parseToJsonElement(response.body()).jsonObject.also {
+            sessionState.sessionId = it["id"]?.jsonPrimitive?.content
+            sessionState.endsAt = it["endsAt"]?.jsonPrimitive?.content
+        }
+        println(sessionState.toString())
         super.doOKAction()
     }
 }
