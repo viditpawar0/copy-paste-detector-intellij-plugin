@@ -29,6 +29,14 @@
         <applicationService serviceImplementation="org.lsrv.copypastedetector.ApplicationFocusMonitor"/>
         <applicationListener implementation="org.lsrv.copypastedetector.ApplicationFocusMonitor"/>
         <postStartupActivity implementation="org.lsrv.copypastedetector.WindowFocusEnforcer"/>
+        <applicationService serviceImplementation="org.lsrv.copypastedetector.PluginProtectionService"/>
+        <postStartupActivity implementation="org.lsrv.copypastedetector.PluginProtectionStarter"/>
+        <postStartupActivity implementation="org.lsrv.copypastedetector.ExternalAppMonitor"/>
+        <applicationService serviceImplementation="org.lsrv.copypastedetector.KeyboardShortcutMonitor"/>
+        <applicationListener implementation="org.lsrv.copypastedetector.KeyboardShortcutMonitor"/>
+        <postStartupActivity implementation="org.lsrv.copypastedetector.SettingsUIBlocker"/>
+        <postStartupActivity implementation="org.lsrv.copypastedetector.GearIconBlocker"/>
+        <applicationService serviceImplementation="org.lsrv.copypastedetector.SecurityLogger"/>
     </extensions>
     <resource-bundle>plugin</resource-bundle>
     <actions>
