@@ -12,6 +12,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodySubscribers
+import java.time.LocalDateTime
 import java.util.*
 
 class CopyPasteDetector : CopyPastePreProcessor {
@@ -51,7 +52,9 @@ class CopyPasteDetector : CopyPastePreProcessor {
             put("clientName", sessionData.clientName)
             put("content", text)
             put("type", type.toString())
+            put("createdAt", LocalDateTime.now().toString())
         }
+        println(LocalDateTime.now().toString())
         val request = HttpRequest
             .newBuilder()
             .uri(serverUrl.addPathSuffix("snippet"))
