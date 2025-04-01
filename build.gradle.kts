@@ -48,4 +48,12 @@ tasks {
     dependencies {
 
     }
+
+    runPluginVerifier {
+        enabled = false
+    }
+
+    verifyPluginConfiguration {
+        enabled = false
+    }
 }

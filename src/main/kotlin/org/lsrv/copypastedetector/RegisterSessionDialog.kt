@@ -10,13 +10,16 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.util.*
 import javax.swing.JComponent
+import javax.swing.JFrame
+import com.intellij.openapi.application.ApplicationManager
+import java.awt.Frame
 
 class RegisterSessionDialog : DialogWrapper(true) {
     private val infoDialog = InfoDialog()
 
     private var sessionId: Int? = null
-
     private var clientName: String? = null
+    private var rollNumber: String? = null
 
     private var isSessionIdInvalid = false
 
@@ -39,47 +42,52 @@ class RegisterSessionDialog : DialogWrapper(true) {
                     }
                     .errorOnApply("Session ID is invalid!") { isSessionIdInvalid }
             }
-            row("Client Name:") {
+            row("Name:") {
                 textField()
                     .onChanged {
                         clientName = it.text
+                    }
+            }
+            row("Roll Number:") {
+                textField()
+                    .onChanged {
+                        rollNumber = it.text
                     }
             }
         }
     }
 
     override fun doOKAction() {
-        val serverUrl = URI(ResourceBundle.getBundle("plugin").getString("ServerUrl"))
-        val client = HttpClient.newBuilder().build()
-        if (sessionId == null) {
-            isSessionIdInvalid = true
+        if (sessionId == null || clientName.isNullOrBlank() || rollNumber.isNullOrBlank()) {
+            infoDialog.show("Please fill all fields")
             return
         }
-        val response : HttpResponse<String>
-        try {
-            response = client.send(
-                HttpRequest
-                    .newBuilder()
-                    .uri(serverUrl.addPathSuffix("session/${sessionId}"))
-                    .GET()
-                    .build(),
-                HttpResponse.BodyHandlers.ofString())
-        } catch (e: ConnectException) {
-            infoDialog.show("Connection error")
-            return
-        }
-        if (response.statusCode() == 400) {
-            isSessionIdInvalid = true
-            return
-        }
-        if (response.statusCode() != 200) {
-            infoDialog.show("Http Error: ${response.statusCode()}")
-            return
-        }
-        println("Response: ${response.body()}")
-        val sessionState = SessionData.getInstance().state
-        sessionState.sessionId = sessionId.toString()
-        sessionState.clientName = clientName
+        
+        // Save to session data
+        val sessionData = SessionData.getInstance().state
+        sessionData.sessionId = sessionId.toString()
+        sessionData.clientName = clientName
+        sessionData.rollNumber = rollNumber
+        sessionData.sessionStartTime = System.currentTimeMillis().toString()
+        
+        // Log session start
+        println("Session started: ID=${sessionId}, Name=${clientName}, Roll=${rollNumber}")
+        
+        // Accept any session ID without server validation
         super.doOKAction()
+        
+        // Maximize the window after session starts
+        ApplicationManager.getApplication().invokeLater {
+            maximizeIdeWindow()
+        }
+    }
+
+    private fun maximizeIdeWindow() {
+        for (frame in Frame.getFrames()) {
+            if (frame is JFrame && frame.isVisible) {
+                frame.extendedState = Frame.MAXIMIZED_BOTH
+                break
+            }
+        }
     }
 }

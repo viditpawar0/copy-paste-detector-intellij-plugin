@@ -12,6 +12,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodySubscribers
+import java.net.http.HttpResponse.BodyHandlers
 import java.time.LocalDateTime
 import java.util.*
 
@@ -20,12 +21,37 @@ class CopyPasteDetector : CopyPastePreProcessor {
     private val client = HttpClient.newBuilder().build()
     private val sessionData = SessionData.getInstance().state
 
+    private fun isSessionActive(): Boolean {
+        if (sessionData.sessionId.isNullOrEmpty()) {
+            return false
+        }
+        
+        try {
+            val response = client.send(
+                HttpRequest
+                    .newBuilder()
+                    .uri(serverUrl.addPathSuffix("session/active/${sessionData.sessionId}"))
+                    .GET()
+                    .build(),
+                BodyHandlers.ofString())
+            
+            return response.statusCode() == 200
+        } catch (e: Exception) {
+            println("Error checking session: ${e.message}")
+            return false
+        }
+    }
+
     override fun preprocessOnCopy(
         file: PsiFile?,
         startOffsets: IntArray?,
         endOffsets: IntArray?,
         text: String?
     ): String? {
+        if (!isSessionActive()) {
+            return text
+        }
+        
         println("Copied: $text")
         postSnippet(text, SnippetType.COPIED)
         return text
@@ -38,9 +64,10 @@ class CopyPasteDetector : CopyPastePreProcessor {
         text: String?,
         rawText: RawText?
     ): String {
-        if (sessionData.sessionId == null) {
+        if (!isSessionActive()) {
             return text.orEmpty()
         }
+        
         postSnippet(text, SnippetType.PASTED)
         println("Pasted: $text")
         return text.orEmpty()

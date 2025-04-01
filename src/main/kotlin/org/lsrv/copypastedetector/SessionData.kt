@@ -8,6 +8,8 @@ class SessionData : SimplePersistentStateComponent<SessionData.Session>(Session(
     class Session: BaseState() {
         var sessionId by string()
         var clientName by string()
+        var rollNumber by string()
+        var sessionStartTime by string()
     }
     companion object {
         fun getInstance(): SessionData = service()

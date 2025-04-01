@@ -25,6 +25,10 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <copyPastePreProcessor implementation="org.lsrv.copypastedetector.CopyPasteDetector"/>
+        <postStartupActivity implementation="org.lsrv.copypastedetector.StartupSessionRegistration"/>
+        <applicationService serviceImplementation="org.lsrv.copypastedetector.ApplicationFocusMonitor"/>
+        <applicationListener implementation="org.lsrv.copypastedetector.ApplicationFocusMonitor"/>
+        <postStartupActivity implementation="org.lsrv.copypastedetector.WindowFocusEnforcer"/>
     </extensions>
     <resource-bundle>plugin</resource-bundle>
     <actions>
