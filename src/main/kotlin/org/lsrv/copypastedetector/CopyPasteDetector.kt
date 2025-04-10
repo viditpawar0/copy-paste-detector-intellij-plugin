@@ -6,17 +6,13 @@ import com.intellij.openapi.editor.RawText
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.remoteDev.util.addPathSuffix
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodySubscribers
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
+import java.time.Instant
 import java.util.*
 
 class CopyPasteDetector : CopyPastePreProcessor {
@@ -51,13 +47,13 @@ class CopyPasteDetector : CopyPastePreProcessor {
     }
 
     private fun postSnippet(text: String?, type: SnippetType) {
-        if(LocalDateTime.parse(sessionData.endsAt).isBefore(LocalDateTime.now())) return
+//        if(Instant.parse(sessionData.endsAt).isBefore(Instant.now())) return
         val body = buildJsonObject {
             put("session", sessionData.sessionId)
             put("clientName", sessionData.clientName)
             put("content", text)
             put("type", type.toString())
-            put("createdAt", LocalDateTime.now().toString())
+            put("createdAt", Instant.now().toString())
         }
         println(body)
         val request = HttpRequest
