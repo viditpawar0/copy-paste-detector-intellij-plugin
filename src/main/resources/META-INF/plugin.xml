@@ -33,4 +33,12 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
+    <applicationListeners>
+        <listener class="org.lsrv.copypastedetector.ActionListener"
+                  topic="com.intellij.openapi.actionSystem.ex.AnActionListener"/>
+        <listener class="org.lsrv.copypastedetector.AppListener"
+                  topic="com.intellij.openapi.application.ApplicationListener"/>
+        <listener class="org.lsrv.copypastedetector.AppFocusListener"
+                  topic="com.intellij.openapi.application.ApplicationActivationListener"/>
+    </applicationListeners>
 </idea-plugin>
